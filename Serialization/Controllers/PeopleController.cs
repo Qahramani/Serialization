@@ -26,24 +26,24 @@ public class PeopleController : ControllerBase
         return Ok(person);
     }
     [HttpPost]
-    public IActionResult CreatePerson(Person person)
+    public IActionResult CreatePerson(PersonPostDto person)
     {
-        _personService.Add(person);
+       var result = _personService.Add(person);
 
-        return Ok();
+        return Ok(result);
     }
     [HttpPut]
-    public IActionResult UpdatePerson(Person person)
+    public IActionResult UpdatePerson(PersonPutDto person)
     {
-        _personService.Update(person);
+       var result = _personService.Update(person);
 
-        return Ok();
+        return Ok(result);
     }
     [HttpDelete("{id}")]
     public IActionResult DeletePerson(int id)
     {
-        _personService.Delete(id);
+       var result = _personService.Delete(id);
 
-        return Ok();
+        return Ok(result);
     }
 }

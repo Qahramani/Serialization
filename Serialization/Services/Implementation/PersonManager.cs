@@ -1,4 +1,8 @@
 ﻿
+using AutoMapper;
+using Serialization.Dtos.ResponseDto;
+using Serialization.Exceptions;
+
 namespace Serialization.Services.Implementation;
 
 public class PersonManager : IPersonService
@@ -6,65 +10,78 @@ public class PersonManager : IPersonService
     private readonly ISerializerService<Person> _serializerService;
     private readonly IWebHostEnvironment _environment;
     private string PATH;
+    private readonly IMapper _mapper;
 
-    public PersonManager(ISerializerService<Person> serializerService, IWebHostEnvironment environment)
+    public PersonManager(ISerializerService<Person> serializerService, IWebHostEnvironment environment, IMapper mapper)
     {
         _serializerService = serializerService;
         _environment = environment;
         PATH = Path.Combine(_environment.WebRootPath, "documents", "people.txt");
-    }   
+        _mapper = mapper;
+    }
 
-    public List<Person> GetAll()
+    public List<PersonGetDto> GetAll()
     {
         var people = _serializerService.ReadFromFile(PATH);
 
-        return people;
+        var dtos = _mapper.Map<List<PersonGetDto>>(people);
+
+        return dtos;
     }
-    public Person GetById(int id)
+    public PersonGetDto GetById(int id)
     {
         var people = _serializerService.ReadFromFile(PATH);
 
         var person = people.FirstOrDefault(x => x.Id == id);
 
-        if (person == null) throw new Exception("Not found");
+        if (person == null) throw new NotFoundException("Not found");
 
-        return person;
+        var dto = _mapper.Map<PersonGetDto>(person);
+
+        return dto;
     }
 
-    public void Delete(int id)
+    public ResultDto Delete(int id)
     {
         var people = _serializerService.ReadFromFile(PATH);
 
         var person = people.FirstOrDefault(x => x.Id == id);
 
-        if (person == null) throw new Exception("Not found");
+        if (person == null) throw new NotFoundException("Not found");
 
         people.Remove(person);
 
         _serializerService.WriteToFile(people, PATH);
+
+        return new ResultDto("Successfully deleted");
     }
 
-    public void Add(Person person)
+    public ResultDto Add(PersonPostDto dto)
     {
         var people = _serializerService.ReadFromFile(PATH);
+
+         var person = _mapper.Map<Person>(dto);
+
 
         people.Add(person);
 
         _serializerService.WriteToFile(people, PATH);
+
+        return new ResultDto("Successfully added");
     }
 
-    public void Update(Person person)
+    public ResultDto Update(PersonPutDto dto)
     {
         var people = _serializerService.ReadFromFile(PATH);
 
-        var foundPerson = people.FirstOrDefault(x => x.Id == person.Id);
+        var foundPerson = people.FirstOrDefault(x => x.Id == dto.Id);
 
-        if (foundPerson == null) throw new Exception("Not Found");
+        if (foundPerson == null) throw new NotFoundException("Not Found");
 
-        foundPerson.Firstname = person.Firstname;
-        foundPerson.Lastname = person.Lastname;
-        foundPerson.Age = person.Age;
+        foundPerson = _mapper.Map(dto, foundPerson);
 
         _serializerService.WriteToFile(people,PATH);
+
+        return new ResultDto("Successfully updated");
     }
 }

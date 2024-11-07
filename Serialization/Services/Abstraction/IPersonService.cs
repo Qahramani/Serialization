@@ -1,13 +1,15 @@
-﻿using Serialization.Entities;
+﻿using Serialization.Dtos;
+using Serialization.Dtos.ResponseDto;
+using Serialization.Entities;
 
 namespace Serialization.Services.Abstraction;
 
 public interface IPersonService
 {
-    Person GetById(int id);
-    List<Person> GetAll();
+    PersonGetDto GetById(int id);
+    List<PersonGetDto> GetAll();
 
-    void Add(Person person);
-    void Update(Person person);
-    void Delete(int id);
+    ResultDto Add(PersonPostDto dto);
+    ResultDto Update(PersonPutDto dto);
+    ResultDto Delete(int id);
 }
